@@ -1,37 +1,61 @@
 import React from 'react';
 import BasicComponent from "../component/BasicComponent";
-import $ from 'jquery'
+import httpRequest from '../common/util/HttpRequest';
 import {JSEncrypt} from 'jsencrypt';
 
 class LoginForm extends BasicComponent {
-    static handleClick() {
-        let userName = 'test1';
-        let password = 'cd123321';
-        //
-        $.get('http://localhost:18888/security/rsaPublicKey', function (data) {
-            if (data.code === '000') {
-                let keyId = data.data.keyId;
-                let publicKey = data.data.publicKey;
 
-                let encrypt = new JSEncrypt();
-                encrypt.setPublicKey(publicKey);
-                password= encrypt.encrypt(password);
-                console.log(password);
+    constructor(props) {
+        super(props);
+        this.state = { // define this.state in constructor
+            userName: "",
+            passWord: ""
+        };
+        this.handleClick = this.handleClick.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+    }
 
-                $.get('http://localhost:18888/user/token/test1',{},function(data){
-                    console.log(data);
-                },"json");
+    handleClick() {
+        let param = {
+            method: 'GET',
+            mode: 'cors'
+        };
 
-            }
-        }, "json");
+        httpRequest('http://localhost:18888/security/rsaPublicKey', param, function (data) {
+
+            let encrypt = new JSEncrypt();
+            encrypt.setPublicKey(data.publicKey);
+            let passWord = encrypt.encrypt(this.state.passWord);
+            param.headers = {
+                "passWord": passWord,
+                "keyId": data.keyId
+            };
+            alert(this.state.userName);
+            httpRequest("http://localhost:18888/users/token/" + this.state.userName, param, function (data, token) {
+                console.log(data);
+                console.log(token);
+                let storage = window.localStorage;
+                storage['token'] = token;
+            });
+
+        });
+
+    }
+
+    handleChange(event) {
+        event.persist();
+        if (event.target.type === 'text')
+            this.setState({userName: event.target.value});
+        else
+            this.setState({passWord: event.target.value});
     }
 
     render() {
         return (
             <div>
-                账号:<input id='userName' type='text'/><br/>
-                密码:<input id='password' type='password'/> <br/>
-                <input type='button' onClick={LoginForm.handleClick}/>
+                账号:<input type='text' onChange={this.handleChange}/><br/>
+                密码:<input type='password' onChange={this.handleChange}/> <br/>
+                <input type='button' onClick={this.handleClick}/>
             </div>
         );
     }
