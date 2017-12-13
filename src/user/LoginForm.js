@@ -2,6 +2,7 @@ import React from 'react';
 import BasicComponent from "../component/BasicComponent";
 import httpRequest from '../common/util/HttpRequest';
 import {JSEncrypt} from 'jsencrypt';
+import BasicInput from '../common/component/BasicInput';
 
 class LoginForm extends BasicComponent {
 
@@ -20,20 +21,18 @@ class LoginForm extends BasicComponent {
             method: 'GET',
             mode: 'cors'
         };
-
+        let passWord=this.state.passWord;
+        let userName=this.state.userName;
         httpRequest('http://localhost:18888/security/rsaPublicKey', param, function (data) {
 
             let encrypt = new JSEncrypt();
             encrypt.setPublicKey(data.publicKey);
-            let passWord = encrypt.encrypt(this.state.passWord);
+            passWord = encrypt.encrypt(passWord);
             param.headers = {
                 "passWord": passWord,
                 "keyId": data.keyId
             };
-            alert(this.state.userName);
-            httpRequest("http://localhost:18888/users/token/" + this.state.userName, param, function (data, token) {
-                console.log(data);
-                console.log(token);
+            httpRequest("http://localhost:18888/users/token/" + userName, param, function (data, token) {
                 let storage = window.localStorage;
                 storage['token'] = token;
             });
@@ -44,18 +43,19 @@ class LoginForm extends BasicComponent {
 
     handleChange(event) {
         event.persist();
-        if (event.target.type === 'text')
-            this.setState({userName: event.target.value});
-        else
-            this.setState({passWord: event.target.value});
+        let element = {};
+        element[event.target.name] = event.target.value;
+        this.setState(element);
     }
 
     render() {
+        let value = this.state;
         return (
             <div>
-                账号:<input type='text' onChange={this.handleChange}/><br/>
-                密码:<input type='password' onChange={this.handleChange}/> <br/>
-                <input type='button' onClick={this.handleClick}/>
+                账号:<BasicInput name="userName" type="text" handleChange={this.handleChange} value={value.userName}/><br/>
+                密码:<BasicInput name="passWord" type="password" handleChange={this.handleChange}
+                            value={value.passWord}/><br/>
+                <BasicInput type="button" handleClick={this.handleClick} value="登陆"/><br/>
             </div>
         );
     }

@@ -7,13 +7,14 @@ let httpRequest = function (url, param, callback) {
             throw new Error(response.statusText);
     }).then(function (data) {
         if (data.code === '000') {
-            if (callback !== null)
+            if (callback !== undefined)
                 callback(data.data, data.token);
         }
         else
             alert(data.msg);
     }).catch(function (err) {
-        alert("请求失败");
+        console.log(err);
+        alert(err);
     });
 };
 
