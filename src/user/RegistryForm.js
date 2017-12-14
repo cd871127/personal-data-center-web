@@ -29,7 +29,7 @@ class RegistryForm extends BasicComponent {
         let userInfo = this.state;
         httpRequest('http://localhost:18888/security/rsaPublicKey', param, function (data) {
 
-
+            data = data.data;
             let encrypt = new JSEncrypt();
             encrypt.setPublicKey(data.publicKey);
             console.log(userInfo.passWord);
@@ -46,11 +46,11 @@ class RegistryForm extends BasicComponent {
                 body: JSON.stringify(userInfo)
             };
 
-            httpRequest("http://localhost:18888/users/registry", param, function (data, token) {
-                console.log(data);
-                console.log(token);
-                let storage = window.localStorage;
-                storage['token'] = token;
+            httpRequest("http://localhost:18888/users/registry", param, function (data) {
+                // console.log(data);
+                // console.log(token);
+                // let storage = window.localStorage;
+                // storage['token'] = token;
             });
 
         });

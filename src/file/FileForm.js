@@ -1,12 +1,23 @@
 import React, {Component} from 'react';
 import BasicInput from '../common/component/BasicInput';
 import httpRequest from '../common/util/HttpRequest';
+import BasicTable from '../common/component/BasicTable';
 
 class FileForm extends Component {
     constructor(props) {
         super(props);
 
+        this.state = { // define this.state in constructor
+            tableMetaData: {
+                headers: ['fileName', 'postfix','readableCreatedDate',  'readableFileSize'],
+                titles: ['文件名','类型', '大小',  '上传时间']
+            },
+            data: "",
+
+        };
+
         this.handleClick = this.handleClick.bind(this);
+        this.queryUserFiles = this.queryUserFiles.bind(this);
         // this.handleChange = this.handleChange.bind(this);
     }
 
@@ -17,19 +28,32 @@ class FileForm extends Component {
 
     handleClick() {
         let data = new FormData();
-        let input = document.querySelector('input[type="file"]');
-        data.append("file", input.files);
+        let files = document.querySelector('input[type="file"]').files;
+        for (let i = 0; i !== files.length; ++i)
+            data.append("file" + i, files[i]);
         let param = {
             method: 'POST',
             mode: 'cors',
-
             body: data
         };
+        httpRequest("http://localhost:18888/file/cdistc", param, function (data,ref) {
+            alert(data.msg);
+            ref.queryUserFiles();
+        }, this);
+    }
 
-        httpRequest("http://localhost:18888/file/cdistc", param, function (data) {
-            alert(111);
-        });
+    queryUserFiles() {
+        let param = {
+            method: 'GET',
+            mode: 'cors'
+        };
+        httpRequest("http://localhost:18888/file/cdistc", param, function (data, ref) {
+            ref.setState({data: data.data});
+        }, this);
+    }
 
+    componentWillMount() {
+        this.queryUserFiles();
     }
 
     render() {
@@ -37,6 +61,8 @@ class FileForm extends Component {
             <div>
                 <input type="file" multiple="multiple"/>
                 <BasicInput type="button" handleClick={this.handleClick} value="上传"/><br/>
+                <BasicInput type="button" handleClick={this.queryUserFiles} value="查询"/><br/>
+                <BasicTable data={this.state.data} metadata={this.state.tableMetaData} />
             </div>
         )
     }

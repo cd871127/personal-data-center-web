@@ -21,10 +21,10 @@ class LoginForm extends BasicComponent {
             method: 'GET',
             mode: 'cors'
         };
-        let passWord=this.state.passWord;
-        let userName=this.state.userName;
+        let passWord = this.state.passWord;
+        let userName = this.state.userName;
         httpRequest('http://localhost:18888/security/rsaPublicKey', param, function (data) {
-
+            data = data.data;
             let encrypt = new JSEncrypt();
             encrypt.setPublicKey(data.publicKey);
             passWord = encrypt.encrypt(passWord);
@@ -32,9 +32,9 @@ class LoginForm extends BasicComponent {
                 "passWord": passWord,
                 "keyId": data.keyId
             };
-            httpRequest("http://localhost:18888/users/token/" + userName, param, function (data, token) {
+            httpRequest("http://localhost:18888/users/token/" + userName, param, function (data) {
                 let storage = window.localStorage;
-                storage['token'] = token;
+                storage['token'] = data.token;
             });
 
         });
@@ -52,9 +52,10 @@ class LoginForm extends BasicComponent {
         let value = this.state;
         return (
             <div>
-                账号:<BasicInput name="userName" type="text" handleChange={this.handleChange} value={value.userName}/><br/>
+                账号:<BasicInput name="userName" type="text" handleChange={this.handleChange}
+                               value={value.userName}/><br/>
                 密码:<BasicInput name="passWord" type="password" handleChange={this.handleChange}
-                            value={value.passWord}/><br/>
+                               value={value.passWord}/><br/>
                 <BasicInput type="button" handleClick={this.handleClick} value="登陆"/><br/>
             </div>
         );

@@ -1,4 +1,4 @@
-let httpRequest = function (url, param, callback) {
+let httpRequest = function (url, param, callback,ref) {
     fetch(url, param).then(function (response) {
         if (response.ok) {
             return response.json();
@@ -6,9 +6,10 @@ let httpRequest = function (url, param, callback) {
         else
             throw new Error(response.statusText);
     }).then(function (data) {
+        // console.log(data);
         if (data.code === '000') {
             if (callback !== undefined)
-                callback(data.data, data.token);
+                callback(data,ref);
         }
         else
             alert(data.msg);
